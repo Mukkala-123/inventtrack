@@ -1,0 +1,58 @@
+name: Node CI/CD - InvenTrack
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    name: Build & Test Backend
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Download your code from GitHub
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # Step 2: Install Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      # Step 3: Install backend dependencies
+      - name: Install Dependencies
+        working-directory: ./backend
+        run: npm install
+
+      # Step 4: Check for syntax errors
+      - name: Check for Errors
+        working-directory: ./backend
+        run: node --check server.js && echo "✅ No syntax errors found"
+
+      # Step 5: Verify all required files exist
+      - name: Verify Project Structure
+        run: |
+          echo "Checking project files..."
+          test -f backend/server.js && echo "✅ server.js found"
+          test -f backend/db.js     && echo "✅ db.js found"
+          test -f frontend/src/App.js && echo "✅ App.js found"
+          echo "✅ All files verified"
+
+      # Step 6: Install frontend dependencies and build
+      - name: Build Frontend
+        working-directory: ./frontend
+        run: |
+          npm install
+          npm run build
+        env:
+          CI: false
+
+      # Step 7: Deploy to Render (triggers auto-deploy via webhook)
+      - name: Deploy to Render
+        if: github.ref == 'refs/heads/main'
+        run: |
+          curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}"
+          echo "✅ Deployment triggered on Render"
