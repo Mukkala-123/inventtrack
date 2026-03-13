@@ -1,38 +1,55 @@
 const mysql = require("mysql");
 
-const db = mysql.createConnection({
-  host     : process.env.DB_HOST     || "localhost",
-  port     : process.env.DB_PORT     || 3306,
-  user     : process.env.DB_USER     || "root",
-  password : process.env.DB_PASSWORD || "Manisha@2006",
-  database : process.env.DB_NAME     || "inventory"
-});
+let db;
 
-db.connect((err) => {
-  if (err) {
-    console.log("Database connection failed:", err);
-    return;
-  }
-  console.log("MySQL Connected");
-  db.query("DESCRIBE products", (err, fields) => {
+function connect() {
+  db = mysql.createConnection({
+    host     : process.env.DB_HOST     || "localhost",
+    port     : process.env.DB_PORT     || 3306,
+    user     : process.env.DB_USER     || "root",
+    password : process.env.DB_PASSWORD || "Manisha@2006",
+    database : process.env.DB_NAME     || "inventory"
+  });
+
+  db.connect((err) => {
     if (err) {
-      db.query(`CREATE TABLE IF NOT EXISTS products (
+      console.log("DB connection failed:", err.message);
+      console.log("Retrying in 5 seconds...");
+      setTimeout(connect, 5000);
+      return;
+    }
+
+    console.log("MySQL Connected to:", process.env.DB_HOST || "localhost");
+
+    // Create table if not exists
+    db.query(`
+      CREATE TABLE IF NOT EXISTS products (
         id INT AUTO_INCREMENT PRIMARY KEY,
         name VARCHAR(100) NOT NULL,
         quantity INT NOT NULL DEFAULT 0,
         price INT NOT NULL DEFAULT 0,
         category VARCHAR(100) DEFAULT 'Others'
-      )`, (e) => { if(e) console.log(e); else console.log("Table created"); });
-      return;
-    }
-    const hasCategory = fields.some(f => f.Field === "category");
-    if (!hasCategory) {
-      db.query("ALTER TABLE products ADD COLUMN category VARCHAR(100) DEFAULT 'Others'");
-    } else {
-      console.log("Category column ready");
-    }
-    db.query("UPDATE products SET category='Others' WHERE category IS NULL OR category=''");
+      )
+    `, (err) => {
+      if (err) console.log("Table error:", err.message);
+      else {
+        console.log("Products table ready");
+        db.query("UPDATE products SET category='Others' WHERE category IS NULL OR category=''");
+      }
+    });
   });
-});
 
-module.exports = db;
+  db.on("error", (err) => {
+    console.log("DB error:", err.message);
+    if (err.fatal) {
+      console.log("Fatal error — reconnecting...");
+      setTimeout(connect, 5000);
+    }
+  });
+}
+
+connect();
+
+module.exports = {
+  query: (...args) => db.query(...args)
+};
