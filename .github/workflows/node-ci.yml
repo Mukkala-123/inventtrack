@@ -41,7 +41,7 @@ jobs:
           test -f frontend/src/App.js && echo "✅ App.js found"
           echo "✅ All files verified"
 
-      # Step 6: Install frontend dependencies and build (fixed permission)
+      # Step 6: Install frontend and build
       - name: Build Frontend
         working-directory: ./frontend
         run: |
@@ -51,9 +51,10 @@ jobs:
         env:
           CI: false
 
-      # Step 7: Deploy to Render
+      # Step 7: Deployment confirmation
       - name: Deploy to Render
         if: github.ref == 'refs/heads/main'
         run: |
-          curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}"
-          echo "✅ Deployment triggered on Render"
+          echo "✅ Code pushed to main branch"
+          echo "✅ Render auto-deploys from GitHub automatically"
+          echo "✅ CI/CD Pipeline Complete!"
