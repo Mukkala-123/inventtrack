@@ -41,16 +41,17 @@ jobs:
           test -f frontend/src/App.js && echo "✅ App.js found"
           echo "✅ All files verified"
 
-      # Step 6: Install frontend dependencies and build
+      # Step 6: Install frontend dependencies and build (fixed permission)
       - name: Build Frontend
         working-directory: ./frontend
         run: |
           npm install
+          chmod +x node_modules/.bin/react-scripts
           npm run build
         env:
           CI: false
 
-      # Step 7: Deploy to Render (triggers auto-deploy via webhook)
+      # Step 7: Deploy to Render
       - name: Deploy to Render
         if: github.ref == 'refs/heads/main'
         run: |
