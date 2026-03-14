@@ -3,7 +3,14 @@ const cors = require("cors");
 const db = require("./db");
 
 const app = express();
-app.use(cors());
+
+// Allow requests from Netlify frontend
+app.use(cors({
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type"]
+}));
+
 app.use(express.json());
 
 /* ── GET ALL PRODUCTS ── */
@@ -14,7 +21,7 @@ app.get("/products", (req, res) => {
   });
 });
 
-/* ── GET SINGLE PRODUCT BY ID (for auto-fill on Update page) ── */
+/* ── GET SINGLE PRODUCT BY ID ── */
 app.get("/products/:id", (req, res) => {
   db.query(
     "SELECT * FROM products WHERE id = ?",
@@ -63,6 +70,8 @@ app.delete("/deleteproduct/:id", (req, res) => {
   });
 });
 
-app.listen(5000, () => {
-  console.log("Server running on http://localhost:5000");
+// Use Railway's PORT or default 5000
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`✅ Server running on port ${PORT}`);
 });

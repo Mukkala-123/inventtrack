@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 
-const API = "http://localhost:5000";
+const API = process.env.REACT_APP_API_URL || "http://localhost:5000";
 const CATS = ["Electronics","Furniture","Clothing","Food & Beverages","Tools","Stationery","Others"];
 const ALL_CATS = ["All Products", ...CATS];
 
