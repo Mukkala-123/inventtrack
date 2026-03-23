@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 
-const API = process.env.REACT_APP_API_URL || "https://inventtrack-backend.up.railway.app";
+const API = "http://localhost:5000";
 const CATS = ["Electronics","Furniture","Clothing","Food & Beverages","Tools","Stationery","Others"];
 const ALL_CATS = ["All Products", ...CATS];
 
@@ -301,7 +301,7 @@ function CatBar({ active, setActive, setPage }) {
 /* ═══ LOGIN ═════════════════════════════════════════════════════════════════ */
 function Login({ onLogin }) {
   const [u, setU] = useState(""); const [p, setP] = useState(""); const [err, setErr] = useState("");
-  const go = () => { if (u === "admin" && p === "admin123") onLogin(); else setErr("Invalid credentials. Try admin / admin123"); };
+  const go = async () => { if (!u || !p) { setErr("Enter username and password"); return; } try { await axios.post(`${API}/login`, { username: u, password: p }); onLogin(); } catch (e) { setErr(e.response?.data?.error || "Invalid credentials"); } };
   return (
     <div className="lpage">
       <StyleTag />

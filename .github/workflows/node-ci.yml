@@ -12,38 +12,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout code
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      # Step 2: Install Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
 
-      # Step 3: Install backend dependencies
       - name: Install Backend Dependencies
         working-directory: ./backend
         run: npm install
 
-      # Step 4: Check backend for syntax errors
       - name: Check Backend for Errors
         working-directory: ./backend
-        run: node --check server.js && echo "✅ No syntax errors in server.js"
+        run: node --check server.js && echo "✅ No syntax errors found"
 
-      # Step 5: Verify project structure
       - name: Verify Project Structure
         run: |
-          echo "Checking project files..."
-          test -f backend/server.js  && echo "✅ server.js found"
-          test -f backend/db.js      && echo "✅ db.js found"
-          test -f backend/package.json && echo "✅ backend/package.json found"
+          test -f backend/server.js && echo "✅ server.js found"
+          test -f backend/db.js     && echo "✅ db.js found"
           test -f frontend/src/App.js && echo "✅ App.js found"
-          test -f netlify.toml        && echo "✅ netlify.toml found"
-          echo "✅ All files verified"
 
-      # Step 6: Build frontend
       - name: Build Frontend
         working-directory: ./frontend
         run: |
@@ -52,14 +42,3 @@ jobs:
           npm run build
         env:
           CI: false
-          REACT_APP_API_URL: ${{ secrets.REACT_APP_API_URL }}
-
-      # Step 7: Done
-      - name: CI/CD Complete
-        run: |
-          echo "✅ Code pushed to main branch"
-          echo "✅ Backend checked — no errors"
-          echo "✅ Frontend built successfully"
-          echo "✅ Railway auto-deploys backend from GitHub"
-          echo "✅ Netlify auto-deploys frontend from GitHub"
-          echo "✅ CI/CD Pipeline Complete!"
